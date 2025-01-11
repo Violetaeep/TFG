@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet } from 'react-native'
+import { Pressable, StyleSheet, Text } from 'react-native'
 import React from 'react'
 import { tema } from '../constants/tema'
 import Icon from '../assets/icons'
@@ -6,7 +6,7 @@ import Icon from '../assets/icons'
 const Atras = ({router}) => {
   return (
     <Pressable onPress={()=>router.back()} style={styles.button}> 
-      <Icon name="arrowLeft" strokeWidth={2.5} size={26} color={tema.colors.text} />
+        <Text style={{ color: tema.colors.text }}>Atrás</Text>
     </Pressable>
   )
 }

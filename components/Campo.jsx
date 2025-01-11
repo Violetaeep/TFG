@@ -30,8 +30,6 @@ const styles = StyleSheet.create({
         justifyContent:'center',
         borderWidth:1,
         borderColor: tema.colors.text,
-        borderRadius: tema.radius.xxl,
-        borderCurve: 'continuous',
         paddingHorizontal: 18,
         gap:12
 

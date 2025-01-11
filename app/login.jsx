@@ -59,7 +59,7 @@ const Login = () => {
             <Campo
               icon={
                 <Icon
-                  name="mail"
+                  name="perfil"
                   size={26}
                   strokeWidth={2}
                   color={tema.colors.text}
@@ -73,7 +73,7 @@ const Login = () => {
             <Campo
               icon={
                 <Icon
-                  name="lock"
+                  name="perfil"
                   size={26}
                   strokeWidth={2}
                   color={tema.colors.text}

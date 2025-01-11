@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, View, Text } from 'react-native'
 import React from 'react'
 import Pantalla from '../../components/Pantalla'
 import { useRouter } from 'expo-router'
@@ -8,6 +8,7 @@ import { ancho, alto } from '../../helpers/dimensiones'
 import { GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler'
 import Icon from '../../assets/icons'
 import { tema } from '../../constants/tema'
+import { supabase } from '../../lib/supabase'
 
 const perfil = () => {
 
@@ -28,7 +29,7 @@ const perfil = () => {
         <View style={{flex:1, paddingHorizontal:ancho(7)}}>
           <Cabecera titulo="Perfil" atras={true}></Cabecera>
           <TouchableOpacity style={styles.logout} onPress={onLogout}>
-            <Icon name="logout"  strokeWidth={2} color={tema.colors.text}></Icon>
+            <Text>Cerrar sesión</Text>
           </TouchableOpacity>
         </View>
       </Pantalla>

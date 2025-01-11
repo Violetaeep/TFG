@@ -14,17 +14,16 @@ const welcome = () => {
     <Pantalla bg="white">
       <StatusBar style="dark" />
       <View style={styles.container}>
-        
+        <View style={{ gap: 20 }}>
+          <Text style={styles.titulo}>Bienvenidos!</Text>
+          <Text style={styles.punchLine}>
+            A mi proyecto final de grado.
+          </Text>
+        </View>
         <Image
           source={require("../assets/images/eep.png")}
           style={styles.welcomeImage}
         />
-        <View style={{ gap: 20 }}>
-          <Text style={styles.titulo}>Bienvenida!</Text>
-          <Text style={styles.punchLine}>
-            Al proyecto final de grado de Violeta.
-          </Text>
-        </View>
         <View style={styles.footer}>
           <Boton
             titulo="Empecemos"

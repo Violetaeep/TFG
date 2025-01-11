@@ -38,13 +38,11 @@ const styles = StyleSheet.create({
     backgroundColor: tema.colors.primary,
     height: alto(6),
     justifyContent: "center",
-    alignItems: "center",
-    borderCurve: "continuous",
-    borderRadius: tema.radius.xl,
+    alignItems: "center"
   },
   text: {
     fontSize: alto(2.5),
     color: "white",
-    fontWeight: tema.fonts.bold,
+    fontWeight: tema.fonts.bold
   },
 });
