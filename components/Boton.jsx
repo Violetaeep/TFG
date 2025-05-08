@@ -2,31 +2,20 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { tema } from "../constants/tema";
 import { alto } from "../helpers/dimensiones";
-import Carga from "./Carga";
+import { fuentes } from "../constants/fuentes";
 
-const Boton = ({
-  botonStyle,
-  textStyle,
-  titulo = "",
-  onPress = () => {},
-  Carga = false,
-}) => {
-
-
-  if(Carga){
-    return(
-        <View style={[styles.boton, botonStyle, {backgroundColor:'white'}]}>
-            <Carga />
-        </View>
-    )
-  }
-
+const Boton = ({ botonStyles, titulo = "", alPresionar = () => {} }) => {
   return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.boton, botonStyle]}
-    >
-      <Text style={[styles.text, textStyle]}>{titulo}</Text>
+    <Pressable onPress={alPresionar} style={[styles.boton, botonStyles]}>
+      <Text
+        style={{
+          fontFamily: fuentes.PoppinsBold,
+          color: "white",
+          fontSize: alto(2.5),
+        }}
+      >
+        {titulo}
+      </Text>
     </Pressable>
   );
 };
@@ -38,11 +27,12 @@ const styles = StyleSheet.create({
     backgroundColor: tema.colors.primary,
     height: alto(6),
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    borderRadius: tema.radius.sm,
   },
-  text: {
+  texto: {
     fontSize: alto(2.5),
     color: "white",
-    fontWeight: tema.fonts.bold
+    fontWeight: tema.fonts.bold,
   },
 });

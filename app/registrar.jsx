@@ -1,7 +1,6 @@
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useRef, useState } from "react";
 import Pantalla from "../components/Pantalla";
-import Icon from "../assets/icons";
 import { tema } from "../constants/tema";
 import { StatusBar } from "expo-status-bar";
 import Atras from "../components/Atras";
@@ -11,9 +10,11 @@ import Campo from "../components/Campo";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Boton from "../components/Boton";
 import { supabase } from "../lib/supabase";
+import { fuentes } from "../constants/fuentes";
+import { ScrollView } from "react-native-gesture-handler";
 
-const Register = () => {
-  const router = useRouter(); 
+const Registrar = () => {
+  const router = useRouter();
   const emailRef = useRef("");
   const nameRef = useRef("");
   const passwordRef = useRef("");
@@ -21,7 +22,7 @@ const Register = () => {
 
   const onSubmit = async () => {
     if (!emailRef || !passwordRef) {
-      Alert.alert("register", "Porfavor completa todos los campos");
+      Alert.alert("Aviso", "Por favor completa todos los campos");
       return;
     }
 
@@ -29,36 +30,60 @@ const Register = () => {
     let email = emailRef.current.trim();
     let password = passwordRef.current.trim();
 
-    setLoading(true);
+    if (!email.endsWith("@eep-igroup.com")) {
+      Alert.alert(
+        "Error",
+        "El email debe pertenecer al dominio @eep-igroup.com"
+      );
+      return;
+    }
 
-    Alert.alert("Nombre:", name);
+    setLoading(true);
 
     const {
       data: { session },
       error,
-    } = await supabase.auth.register({
+    } = await supabase.auth.signUp({
       email,
       password,
-      options:{
-        data:{
+      options: {
+        data: {
           name,
-        }
-      }
+          email,
+        },
+      },
     });
 
     setLoading(false);
-
-    //token
     console.log("session", session);
-    console.log("error", session);
+
     if (error) {
-      Alert.alert("Sign up", error.message);
+      switch (error.message) {
+        case "Anonymous sign-ins are disabled":
+          Alert.alert("Error", "Rellena todos los campos");
+          break;
+        case "Signup requires a valid password":
+          Alert.alert("Error", "Completa el campo de contraseña");
+          break;
+        case "Unable to validate email address: invalid format":
+          Alert.alert("Error", "El formato del email es incorrecto");
+          break;
+        case "Password should be at least 6 characters.":
+          Alert.alert(
+            "Error",
+            "La contraseña debe tener al menos 6 caracteres"
+          );
+          break;
+        default:
+          Alert.alert("Error", "Ha ocurrido un error inesperado");
+          console.log(error.message);
+          break;
+      }
     }
   };
-
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Pantalla bg="white">
+    <GestureHandlerRootView style={{ flex: 1, marginTop: 30 }}>
+      <ScrollView style={{ padding: ancho(1), paddingVertical: ancho(4) }}>
         <StatusBar style="dark" />
         <View style={styles.container}>
           <Atras router={router} />
@@ -66,46 +91,31 @@ const Register = () => {
             <Text style={styles.welcomeText}>Regístrate</Text>
           </View>
           <View style={styles.form}>
-            <Text style={{ fontSize: alto(2.5), color: tema.colors.text }}>
-              Por favor ingresa tus detalles a continuación 
+            <Text
+              style={{
+                fontSize: alto(2.5),
+                color: tema.colors.text,
+                fontFamily: fuentes.Poppins,
+              }}
+            >
+              Por favor ingresa tus detalles a continuación
             </Text>
             <Campo
-              icon={
-                <Icon
-                  name="perfil"
-                  size={26}
-                  strokeWidth={2}
-                  color={tema.colors.text}
-                />
-              }
+              icon={"person-outline"}
               placeholder="Nombre"
               onChangeText={(value) => {
                 nameRef.current = value;
               }}
             />
             <Campo
-              icon={
-                <Icon
-                  name="perfil"
-                  size={26}
-                  strokeWidth={2}
-                  color={tema.colors.text}
-                />
-              }
+              icon={"mail-outline"}
               placeholder="Email"
               onChangeText={(value) => {
                 emailRef.current = value;
               }}
             />
             <Campo
-              icon={
-                <Icon
-                  name="perfil"
-                  size={26}
-                  strokeWidth={2}
-                  color={tema.colors.text}
-                />
-              }
+              icon={"lock-closed-outline"}
               placeholder="Contraseña"
               secureTextEntry
               onChangeText={(value) => {
@@ -117,7 +127,7 @@ const Register = () => {
           <Boton
             titulo={"Registrar"}
             loading={loading}
-            onPress={onSubmit}
+            alPresionar={onSubmit}
           ></Boton>
           <View style={styles.footer}>
             <Text style={styles.footerText}>Ya tengo cuenta </Text>
@@ -140,12 +150,12 @@ const Register = () => {
             </Pressable>
           </View>
         </View>
-      </Pantalla>
+      </ScrollView>
     </GestureHandlerRootView>
   );
 };
 
-export default Register;
+export default Registrar;
 
 const styles = StyleSheet.create({
   container: {
@@ -178,5 +188,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: tema.colors.text,
     fontSize: alto(2),
+    fontFamily: fuentes.Poppins,
   },
 });

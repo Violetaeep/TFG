@@ -1,31 +1,32 @@
-import { Pressable, StyleSheet, Text } from "react-native";
-import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect } from "react";
 import { tema } from "../constants/tema";
+import { Pressable } from "react-native";
 import { fuentes } from "../constants/fuentes";
 import { Ionicons } from "@expo/vector-icons";
 
-const Atras = ({ router }) => {
+const Badge = ({ icono, onPress = {}, estilosExtra, color }) => {
   return (
-    <Pressable onPress={() => router.back()} style={styles.boton}>
+    <Pressable onPress={onPress} style={[styles.boton, estilosExtra]}>
       <Text
         style={{
-          color: tema.colors.text,
+          color: color,
           fontFamily: fuentes.Poppins,
         }}
       >
-        <Ionicons name="arrow-back" size={20} />
+        <Ionicons name={icono} size={20} />
       </Text>
     </Pressable>
   );
 };
 
-export default Atras;
+export default Badge;
 
 const styles = StyleSheet.create({
   boton: {
     alignSelf: "flex-start",
     padding: 10,
     borderRadius: tema.radius.sm,
-    backgroundColor: "rgba(0,0,0,0.07)",
+    backgroundColor: "rgb(233, 233, 233)",
   },
 });

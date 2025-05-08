@@ -1,7 +1,6 @@
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useRef, useState } from "react";
 import Pantalla from "../components/Pantalla";
-import Icon from "../assets/icons";
 import { tema } from "../constants/tema";
 import { StatusBar } from "expo-status-bar";
 import Atras from "../components/Atras";
@@ -11,74 +10,70 @@ import Campo from "../components/Campo";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Boton from "../components/Boton";
 import { supabase } from "../lib/supabase";
+import { fuentes } from "../constants/fuentes";
+import { ScrollView } from "react-native-gesture-handler";
 
 const Login = () => {
-  
-  const router = useRouter();     
+  const router = useRouter();
   const emailRef = useRef("");
   const passwordRef = useRef("");
-  const [loading, setLoading] = useState(false);
 
-  const onSubmit = async () => {
+  const darseAlta = async () => {
     if (!emailRef || !passwordRef) {
-      Alert.alert("Login", "Please fill all the fields");
+      Alert.alert("Aviso", "Completa todos los campos");
       return;
     }
 
     let email = emailRef.current.trim();
     let password = passwordRef.current.trim();
-
-    setLoading(true);
-
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    setLoading(false);
-
-    console.log("error", error);
-    if (error) {
-      Alert.alert("Login", error.message);
+    if (error.message) {
+      switch (error.message) {
+        case "Invalid login credentials":
+          Alert.alert("Error", "Correo o contraseña incorrectos");
+          break;
+        case "missing email or phone":
+          Alert.alert("Error", "Email o contraseña sin completar");
+          break;
+        default:
+          Alert.alert("Error", "Ha ocurrido un error inesperado");
+          break;
+      }
     }
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Pantalla bg="white">
+    <GestureHandlerRootView style={{ flex: 1, marginTop: 30 }}>
+      <ScrollView style={{ padding: ancho(1), paddingVertical: ancho(4) }}>
         <StatusBar style="dark" />
         <View style={styles.container}>
           <Atras router={router} />
           <View>
-            <Text style={styles.welcomeText}>Bienvenido/a de vuelta</Text>
+            <Text style={styles.welcomeText}>Bienvenido/a!</Text>
           </View>
           <View style={styles.form}>
-            <Text style={{ fontSize: alto(2.5), color: tema.colors.text }}>
-              Ingresa tus detalles a continuación.
+            <Text
+              style={{
+                fontSize: alto(2),
+                color: tema.colors.text,
+                fontFamily: fuentes.Poppins,
+              }}
+            >
+              Ingresa tus datos a continuación.
             </Text>
             <Campo
-              icon={
-                <Icon
-                  name="perfil"
-                  size={26}
-                  strokeWidth={2}
-                  color={tema.colors.text}
-                />
-              }
+              icon={"mail-outline"}
               placeholder="Email"
               onChangeText={(value) => {
                 emailRef.current = value;
               }}
             />
             <Campo
-              icon={
-                <Icon
-                  name="perfil"
-                  size={26}
-                  strokeWidth={2}
-                  color={tema.colors.text}
-                />
-              }
+              icon={"lock-closed-outline"}
               placeholder="Contraseña"
               secureTextEntry
               onChangeText={(value) => {
@@ -86,13 +81,17 @@ const Login = () => {
               }}
             />
           </View>
-          <Text style={styles.forgotPassword}>Has olvidado tu contraseña?</Text>
-          <Boton titulo={"Entrar"} loading={loading} onPress={onSubmit}></Boton>
+          <Pressable onPress={() => router.push("recuperacion")}>
+            <Text style={styles.forgotPassword}>
+              Has olvidado tu contraseña?
+            </Text>
+          </Pressable>
+          <Boton titulo={"Entrar"} alPresionar={darseAlta} />
           <View style={styles.footer}>
             <Text style={styles.footerText}>¿No tienes una cuenta?</Text>
             <Pressable
               onPress={() => {
-                router.push("register");
+                router.push("registrar");
               }}
             >
               <Text
@@ -106,10 +105,10 @@ const Login = () => {
               >
                 Registrarme
               </Text>
-            </Pressable>            
+            </Pressable>
           </View>
         </View>
-      </Pantalla>
+      </ScrollView>
     </GestureHandlerRootView>
   );
 };
@@ -136,6 +135,7 @@ const styles = StyleSheet.create({
     color: tema.colors.text,
     marginHorizontal: ancho(1),
     fontSize: alto(2),
+    fontFamily: fuentes.PoppinsSemiBold,
   },
   footer: {
     flexDirection: "row",
@@ -147,5 +147,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: tema.colors.text,
     fontSize: alto(2),
+    fontFamily: fuentes.Poppins,
   },
 });
