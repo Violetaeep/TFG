@@ -1,15 +1,20 @@
-import { Image, StyleSheet, Text, View, Modal, TextInput } from "react-native";
-import React from "react";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  View,
+  Modal,
+  TextInput,
+  FlatList,
+} from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
 import { ancho, alto } from "../helpers/dimensiones";
 import { tema } from "../constants/tema";
 import { obtenerImagen } from "../services/imagenes";
 import { fuentes } from "../constants/fuentes";
-import { useEffect } from "react";
 import moment from "moment";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, Pressable, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-import { Pressable } from "react-native";
 import {
   buscarLikesPorIdPublicacion,
   agregarLikePorIdPublicacion,
@@ -17,7 +22,7 @@ import {
   obtenerComentariosPorPublicacion,
 } from "../services/publicaciones";
 import { crearNotificacion } from "../services/notificaciones";
-import { useAuth } from "../context/AuthContext";
+import { contarComentariosPublicacion } from "../services/publicaciones";
 
 const Publicacion = ({ item, usuarioActual, router }) => {
   const [likes, setLikes] = useState([]);
@@ -25,167 +30,208 @@ const Publicacion = ({ item, usuarioActual, router }) => {
   const [comentarios, setComentarios] = useState([]);
   const [comentariosModal, setComentariosModal] = useState(false);
   const [nuevoComentario, setNuevoComentario] = useState("");
+  const [cargandoComentarios, setCargandoComentarios] = useState(false);
+  const [numeroComentarios, setNumeroComentarios] = useState(0);
 
   useEffect(() => {
-    const cargarLikes = async () => {
-      const resultado = await buscarLikesPorIdPublicacion(item.id);
+    const cargarDatosIniciales = async () => {
+      try {
+        const resultadoLikes = await buscarLikesPorIdPublicacion(item.id);
+        if (resultadoLikes.success) {
+          setLikes(resultadoLikes.data);
+          const existeLike = resultadoLikes.data.some(
+            (like) => like.id_usuario === usuarioActual.id
+          );
+          setLikeYaExistente(existeLike);
+        }
+      } catch (error) {
+        console.error("Error cargando likes:", error);
+      }
+    };
+
+    cargarDatosIniciales();
+    cargarNumeroComentarios();
+  }, [item.id, usuarioActual]);
+
+  const cargarNumeroComentarios = async () => {
+    try {
+      const resultado = await contarComentariosPublicacion(item.id);
       if (resultado.success) {
-        setLikes(resultado.data);
+        setNumeroComentarios(resultado.data);
       }
-    };
-
-    const verificarLike = async () => {
-      {
-        likes.map((like) => {
-          if (like.id_usuario === usuarioActual.id) {
-            setLikeYaExistente(true);
-          }
-        });
-      }
-    };
-    cargarLikes();
-    verificarLike();
-    cargarComentarios();
-  }, [item.id, likes, comentarios]);
-
-  const cargarComentarios = async () => {
-    const resultado = await obtenerComentariosPorPublicacion(item.id);
-    if (resultado.success) {
-      setComentarios(resultado.data);
+    } catch (error) {
+      console.error("Error cargando el número de comentarios:", error);
     }
   };
 
-  const verPerfilUsuario = () => {
-    router.push({
-      pathname: "/perfilUsuario",
-      params: { idUsuario: item.id_usuario },
-    });
-  };
-
-  const fechaParseada = moment(item?.created_at).format("D MMM");
-
-  const manejarLike = async () => {
-    const resultado = await agregarLikePorIdPublicacion(
-      item.id,
-      usuarioActual.id
-    );
-    if (resultado.success && resultado.accion === "like_agregado") {
-      setLikes(resultado.data);
-
-      const response = await crearNotificacion({
-        id_emisor: usuarioActual.id,
-        id_receptor: item.id_usuario,
-        titulo: "Nuevo like",
-        cuerpo: `${usuarioActual.nombre} le dio like a tu publicación`,
-      });
-
-      if (response.success) {
-        console.log(response.data);
+  const cargarComentarios = useCallback(async () => {
+    try {
+      setCargandoComentarios(true);
+      const resultado = await obtenerComentariosPorPublicacion(item.id);
+      if (resultado.success) {
+        setComentarios(resultado.data);
       }
+    } catch (error) {
+      console.error("Error cargando comentarios:", error);
+    } finally {
+      setCargandoComentarios(false);
     }
-  };
+  }, [item.id]);
 
-  const toggleComentariosModal = async () => {
+  const toggleComentariosModal = useCallback(async () => {
     if (!comentariosModal) {
       await cargarComentarios();
     }
     setComentariosModal(!comentariosModal);
-  };
+  }, [comentariosModal, cargarComentarios]);
 
-  const publicarComentario = async () => {
+  const manejarLike = useCallback(async () => {
+    try {
+      const resultado = await agregarLikePorIdPublicacion(
+        item.id,
+        usuarioActual.id
+      );
+
+      if (resultado.success) {
+        setLikes(resultado.data);
+        setLikeYaExistente(resultado.accion === "like_agregado");
+
+        if (resultado.accion === "like_agregado") {
+          await crearNotificacion({
+            id_emisor: usuarioActual.id,
+            id_receptor: item.id_usuario,
+            titulo: "Nuevo like",
+            cuerpo: `${usuarioActual.nombre} le dio like a tu publicación`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error manejando like:", error);
+    }
+  }, [item.id, item.id_usuario, usuarioActual]);
+
+  const publicarComentario = useCallback(async () => {
     if (nuevoComentario.trim() === "") return;
 
-    const resultado = await agregarComentario(
-      item.id,
-      usuarioActual.id,
-      nuevoComentario
-    );
+    try {
+      const resultado = await agregarComentario(
+        item.id,
+        usuarioActual.id,
+        nuevoComentario
+      );
 
-    if (resultado.success) {
-      await cargarComentarios();
-      const response = await crearNotificacion({
-        id_emisor: usuarioActual.id,
-        id_receptor: item.id_usuario,
-        titulo: "Nuevo comentario",
-        cuerpo: `${usuarioActual.nombre} comentó "${nuevoComentario}"`,
-      });
-      if (response.success) {
-        console.log(response.data);
+      if (resultado.success) {
         setNuevoComentario("");
+        await cargarComentarios();
+        await cargarNumeroComentarios();
+        await crearNotificacion({
+          id_emisor: usuarioActual.id,
+          id_receptor: item.id_usuario,
+          titulo: "Nuevo comentario",
+          cuerpo: `${usuarioActual.nombre} comentó "${nuevoComentario}"`,
+        });
       }
+    } catch (error) {
+      console.error("Error publicando comentario:", error);
     }
-  };
+  }, [
+    item.id,
+    item.id_usuario,
+    nuevoComentario,
+    usuarioActual,
+    cargarComentarios,
+  ]);
+
+  const renderComentario = useCallback(
+    ({ item: comentario }) => (
+      <View style={styles.comentarioItem}>
+        <Image
+          source={obtenerImagen(comentario.usuario?.imagen)}
+          style={styles.comentarioUserImage}
+        />
+        <View style={styles.comentarioContent}>
+          <Text style={styles.comentarioUsername}>
+            {comentario.usuario?.nombre}
+          </Text>
+          <Text style={styles.comentarioText}>{comentario.cuerpo}</Text>
+          <Text style={styles.comentarioFecha}>
+            {moment(comentario.created_at).fromNow()}
+          </Text>
+        </View>
+      </View>
+    ),
+    []
+  );
+
+  const renderEtiquetado = useCallback(
+    (etiquetado) => (
+      <Pressable
+        key={etiquetado.id}
+        onPress={() =>
+          router.push({
+            pathname: "/perfilUsuario",
+            params: { idUsuario: etiquetado.id },
+          })
+        }
+      >
+        <Text style={styles.etiquetadoNombre}>@{etiquetado.nombre}</Text>
+      </Pressable>
+    ),
+    []
+  );
+
+  const fechaParseada = moment(item?.created_at).format("D MMM");
 
   return (
-    <View style={[styles.contendor]}>
+    <View style={styles.contendor}>
       <View style={styles.cabecera}>
         <View style={{ flexDirection: "row", gap: 15 }}>
           <Image
-            source={obtenerImagen(item?.usuario?.imagen)}
+            source={obtenerImagen(item?.autor?.imagen)}
             transition={100}
             borderRadius={100}
-            style={{
-              width: ancho(10),
-              height: ancho(10),
-            }}
+            style={styles.avatar}
           />
-          <Pressable onPress={verPerfilUsuario}>
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: "/perfilUsuario",
+                params: { idUsuario: item.id_usuario },
+              })
+            }
+          >
             <View style={{ gap: 0 }}>
-              <Text
-                style={{
-                  fontFamily: fuentes.PoppinsSemiBold,
-                  fontSize: alto(2),
-                }}
-              >
-                {item?.usuario?.nombre}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: fuentes.Poppins,
-                  fontSize: alto(1.2),
-                }}
-              >
-                {fechaParseada}
-              </Text>
+              <Text style={styles.nombreUsuario}>{item?.autor?.nombre}</Text>
+              <Text style={styles.fechaPublicacion}>{fechaParseada}</Text>
             </View>
           </Pressable>
         </View>
       </View>
+
       <View style={styles.contenido}>
         <Image
           source={obtenerImagen(item?.archivo)}
           transition={100}
           borderRadius={tema.radius.sm}
-          style={{
-            width: ancho(80),
-            height: ancho(80),
-          }}
+          style={styles.imagenPublicacion}
         />
-        <View style={{ flex: 1, flexDirection: "row", marginTop: 10, gap: 15 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 5,
-              alignItems: "center",
-            }}
-          >
+
+        <View style={styles.interacciones}>
+          <View style={styles.botonInteraccion}>
             <Pressable onPress={manejarLike}>
-              {likeYaExistente ? (
-                <Ionicons name="heart" size={23} color={tema.colors.iconos} />
-              ) : (
-                <Ionicons
-                  name="heart-outline"
-                  size={23}
-                  color={tema.colors.iconos}
-                />
-              )}
+              <Ionicons
+                name={likeYaExistente ? "heart" : "heart-outline"}
+                size={23}
+                color={
+                  likeYaExistente ? tema.colors.iconos : tema.colors.iconosDark
+                }
+              />
             </Pressable>
-            <Text style={{ fontFamily: fuentes.Poppins, marginTop: 3 }}>
-              {likes?.length}
-            </Text>
+            <Text style={styles.contadorInteraccion}>{likes?.length}</Text>
           </View>
+
           <TouchableOpacity
-            style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
+            style={styles.botonInteraccion}
             onPress={toggleComentariosModal}
           >
             <Ionicons
@@ -193,19 +239,27 @@ const Publicacion = ({ item, usuarioActual, router }) => {
               size={21}
               color={tema.colors.iconosDark}
             />
-            <Text style={{ fontFamily: fuentes.Poppins, marginTop: 3 }}>
-              {comentarios?.length}
-            </Text>
+            <Text style={styles.contadorInteraccion}>{numeroComentarios}</Text>
           </TouchableOpacity>
         </View>
+
         <View style={styles.cuerpo}>
-          <Text style={styles.cuerpo}>
-            <Text style={{ fontWeight: tema.fonts.bold, color: "black" }}>
-              {item?.usuario?.nombre}
+          <Text style={styles.textoCuerpo}>
+            <Text style={styles.nombreUsuarioCuerpo}>
+              {item?.autor?.nombre}
             </Text>
             {": "}
             {item?.cuerpo}
           </Text>
+
+          {item.etiquetados && item.etiquetados.length > 0 && (
+            <View style={styles.etiquetadosContainer}>
+              <Text style={styles.etiquetadosTitulo}>Etiquetados:</Text>
+              <View style={styles.etiquetadosLista}>
+                {item.etiquetados.map(renderEtiquetado)}
+              </View>
+            </View>
+          )}
         </View>
       </View>
 
@@ -224,33 +278,21 @@ const Publicacion = ({ item, usuarioActual, router }) => {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.comentariosLista}>
-              {comentarios.length > 0 ? (
-                comentarios.map((comentario) => (
-                  <View key={comentario.id} style={styles.comentarioItem}>
-                    <Image
-                      source={
-                        obtenerImagen(comentario.usuario?.imagen) ||
-                        require("../assets/images/perfil.png")
-                      }
-                      style={styles.comentarioUserImage}
-                    />
-                    <View style={styles.comentarioContent}>
-                      <Text style={styles.comentarioUsername}>
-                        {comentario.usuario?.nombre}
-                      </Text>
-                      <Text style={styles.comentarioText}>
-                        {comentario.cuerpo}
-                      </Text>
-                    </View>
-                  </View>
-                ))
-              ) : (
-                <Text style={styles.noComentariosText}>
-                  No hay comentarios aún
-                </Text>
-              )}
-            </View>
+            {cargandoComentarios ? (
+              <ActivityIndicator size="large" color={tema.colors.primary} />
+            ) : (
+              <FlatList
+                data={comentarios}
+                renderItem={renderComentario}
+                keyExtractor={(item) => item.id.toString()}
+                contentContainerStyle={styles.comentariosLista}
+                ListEmptyComponent={
+                  <Text style={styles.noComentariosText}>
+                    No hay comentarios aún
+                  </Text>
+                }
+              />
+            )}
 
             <View style={styles.comentarioInputContenedor}>
               <TextInput
@@ -263,6 +305,7 @@ const Publicacion = ({ item, usuarioActual, router }) => {
               <TouchableOpacity
                 style={styles.comentarioButton}
                 onPress={publicarComentario}
+                disabled={nuevoComentario.trim() === ""}
               >
                 <Ionicons name="send" size={20} color="white" />
               </TouchableOpacity>
@@ -281,28 +324,80 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 30,
     borderRadius: tema.radius.lg,
-    borderCurve: "continuous",
     padding: 10,
     backgroundColor: "#F4F4F4",
-    flex: 1,
-    flexDirection: "col",
   },
   contenido: {
-    flex: 1,
-    flexDirection: "col",
+    gap: 10,
   },
   cabecera: {
-    flex: 1,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  avatar: {
+    width: ancho(10),
+    height: ancho(10),
+  },
+  nombreUsuario: {
+    fontFamily: fuentes.PoppinsSemiBold,
+    fontSize: alto(2),
+  },
+  fechaPublicacion: {
+    fontFamily: fuentes.Poppins,
+    fontSize: alto(1.2),
+  },
+  imagenPublicacion: {
+    width: ancho(80),
+    height: ancho(80),
+    alignSelf: "center",
+  },
+  interacciones: {
+    flexDirection: "row",
     gap: 15,
+    marginTop: 10,
+  },
+  botonInteraccion: {
+    flexDirection: "row",
+    gap: 5,
+    alignItems: "center",
+  },
+  contadorInteraccion: {
+    fontFamily: fuentes.Poppins,
+    marginTop: 3,
   },
   cuerpo: {
+    marginTop: 10,
+  },
+  textoCuerpo: {
     fontSize: ancho(4),
     color: tema.colors.text,
-    marginTop: 10,
     fontFamily: fuentes.Poppins,
+  },
+  nombreUsuarioCuerpo: {
+    fontWeight: tema.fonts.bold,
+    color: "black",
+  },
+  etiquetadosContainer: {
+    marginTop: 10,
+  },
+  etiquetadosTitulo: {
+    fontFamily: fuentes.PoppinsSemiBold,
+    color: tema.colors.textSecondary,
+    marginBottom: 5,
+  },
+  etiquetadosLista: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 5,
+  },
+  etiquetadoNombre: {
+    fontFamily: fuentes.Poppins,
+    color: tema.colors.primary,
+    backgroundColor: tema.colors.fondoSecundario,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
   },
   modalOverlay: {
     flex: 1,
@@ -327,8 +422,8 @@ const styles = StyleSheet.create({
     fontFamily: fuentes.PoppinsSemiBold,
   },
   comentariosLista: {
-    flex: 1,
-    marginBottom: 15,
+    flexGrow: 1,
+    paddingBottom: 15,
   },
   comentarioItem: {
     flexDirection: "row",
@@ -343,6 +438,9 @@ const styles = StyleSheet.create({
   },
   comentarioContent: {
     flex: 1,
+    backgroundColor: tema.colors.fondoInput,
+    padding: 12,
+    borderRadius: 12,
   },
   comentarioUsername: {
     fontFamily: fuentes.PoppinsSemiBold,
@@ -352,6 +450,12 @@ const styles = StyleSheet.create({
     fontFamily: fuentes.Poppins,
     fontSize: 14,
     marginTop: 2,
+  },
+  comentarioFecha: {
+    fontFamily: fuentes.Poppins,
+    fontSize: 12,
+    color: tema.colors.textSecondary,
+    marginTop: 4,
   },
   noComentariosText: {
     textAlign: "center",
@@ -364,7 +468,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: tema.colors.border,
-    paddingTop: 20,
+    paddingTop: 10,
   },
   comentarioInput: {
     flex: 1,

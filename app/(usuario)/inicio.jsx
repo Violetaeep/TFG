@@ -6,10 +6,7 @@ import { ancho, alto } from "../../helpers/dimensiones";
 import { tema } from "../../constants/tema";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import {
-  buscarPublicacion,
-  buscarPublicaciones,
-} from "../../services/publicaciones";
+import { buscarPublicacion } from "../../services/publicaciones";
 import { FlatList } from "react-native";
 import Publicacion from "../../components/Publicacion";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,7 +22,7 @@ const Inicio = () => {
   }, [publicaciones]);
 
   const getPublicaciones = async () => {
-    let res = await buscarPublicaciones();
+    let res = await buscarPublicacion();
     if (res.success) {
       setPublicaciones(res.data);
     }
