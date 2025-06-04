@@ -10,6 +10,11 @@ npm-debug.*
 *.orig.*
 web-build/
 
+# Ocultamos al público la ubicación del proyecto y la llave de acceso
+lib/ 
+constants/
+
+
 # macOS
 .DS_Store
 
