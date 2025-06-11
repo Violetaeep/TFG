@@ -17,9 +17,9 @@ import { obtenerImagen } from "../services/imagenes";
 import {
   buscarLikesPorIdPublicacion,
   obtenerComentariosPorPublicacion,
-  crearOActualizarPublicacion,
   borrarPublicacionPorId,
   obtenerEtiquetadosPorIdPublicacion,
+  actualizarCuerpo,
 } from "../services/publicaciones";
 import { useRouter } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
@@ -114,13 +114,7 @@ const PublicacionModal = ({
 
   const manejarEdicion = async () => {
     if (editando) {
-      const res = await crearOActualizarPublicacion({
-        id: publicacion.id,
-        cuerpo: nuevoCuerpo,
-        id_usuario: usuario.id,
-        archivo: publicacion.archivo,
-      });
-
+      const res = await actualizarCuerpo(publicacion.id, nuevoCuerpo);
       if (res.success) {
         onPublicacionActualizada({
           ...publicacion,

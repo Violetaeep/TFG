@@ -17,7 +17,7 @@ export const crearOActualizarPublicacion = async (publicacion) => {
 
     const { data: publicacionData, error: publicacionError } = await supabase
       .from("publicaciones")
-      .upsert({
+      .update({
         cuerpo: publicacion.cuerpo,
         archivo: publicacion.archivo,
         id_usuario: publicacion.id_usuario,
@@ -47,7 +47,25 @@ export const crearOActualizarPublicacion = async (publicacion) => {
   }
 };
 
-export const buscarPublicacion = async (limite = 10) => {
+export const actualizarCuerpo = async (idPublicacion, nuevoCuerpo)=>{
+  try{
+    const {error} = await supabase
+      .from("publicaciones")
+      .update({cuerpo: nuevoCuerpo})
+      .eq("id", idPublicacion)
+
+    if(error){
+      console.log("Error al actualizar la publicación: ", error);
+      return { success: false, error: error };
+    }
+     return { success: true };
+  }catch(error){
+    console.log("Error al actualizar la publicación: ", error);
+    return { success: false, error: error };
+  }
+}
+
+export const buscarPublicacion = async () => {
   try {
     const { data, error } = await supabase
       .from("publicaciones")
@@ -56,7 +74,6 @@ export const buscarPublicacion = async (limite = 10) => {
         autor:usuarios!id_usuario(id, nombre, imagen)
         `
       )
-      .limit(limite)
       .order("created_at", { ascending: false });
     if (error) {
       console.log("Error al obtener publicaciones: ", error);
@@ -110,7 +127,7 @@ export const contarComentariosPublicacion = async (idPublicacion) => {
   }
 };
 
-export const buscarPublicacionesUsuario = async (usuarioId, limite = 10) => {
+export const buscarPublicacionesUsuario = async (usuarioId) => {
   try {
     const { data, error } = await supabase
       .from("publicaciones")
@@ -120,7 +137,6 @@ export const buscarPublicacionesUsuario = async (usuarioId, limite = 10) => {
         `
       )
       .eq("id_usuario", usuarioId)  
-      .limit(limite)
       .order("created_at", { ascending: false });
 
     if (error) {
