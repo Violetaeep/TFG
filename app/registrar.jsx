@@ -16,12 +16,12 @@ import { ScrollView } from "react-native-gesture-handler";
 const Registrar = () => {
   const router = useRouter();
   const emailRef = useRef("");
-  const nameRef = useRef("");
+  const nameRef = useRef(""); 
   const passwordRef = useRef("");
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async () => {
-    if (!emailRef || !passwordRef) {
+    if (!emailRef || !passwordRef || !nameRef) {
       Alert.alert("Aviso", "Por favor completa todos los campos");
       return;
     }
@@ -29,7 +29,7 @@ const Registrar = () => {
     let name = nameRef.current.trim();
     let email = emailRef.current.trim();
     let password = passwordRef.current.trim();
-
+  
     if (!email.endsWith("@eep-igroup.com")) {
       Alert.alert(
         "Error",
@@ -88,7 +88,7 @@ const Registrar = () => {
         <View style={styles.container}>
           <Atras router={router} />
           <View>
-            <Text style={styles.welcomeText}>Regístrate</Text>
+            <Text style={styles.bienvenida}>Regístrate</Text>
           </View>
           <View style={styles.form}>
             <Text
@@ -163,10 +163,11 @@ const styles = StyleSheet.create({
     gap: 45,
     paddingHorizontal: ancho(7),
   },
-  welcomeText: {
+  bienvenida: {
     fontSize: alto(5),
-    fontWeight: tema.fonts.bold,
+    fontWeight: "300",
     color: tema.colors.text,
+    fontFamily: fuentes.Poppins
   },
   form: {
     gap: 25,
@@ -174,6 +175,7 @@ const styles = StyleSheet.create({
   forgotPassword: {
     textAlign: "left",
     fontWeight: tema.fonts.semibold,
+    fontFamily: fuentes.PoppinsSemiBold,
     color: tema.colors.text,
     marginHorizontal: ancho(1),
     fontSize: alto(3.5),

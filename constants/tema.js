@@ -8,6 +8,7 @@ export const tema = {
     text: "#494949",
     iconos: "rgb(207, 4, 99)",
     iconosDark: "rgb(44, 44, 44)",
+    video: "rgb(255, 200, 221)"
   },
   fonts: {
     light: "300",

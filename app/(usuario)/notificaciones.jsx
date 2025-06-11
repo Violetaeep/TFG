@@ -27,8 +27,8 @@ const Notificaciones = () => {
     obtenerNotificaciones();
   }, [usuario?.id]);
 
-  const obtenerNotificaciones = async () => {
-    if (!usuario?.id) return;
+  async function obtenerNotificaciones(){
+    if (usuario?.id == null) return;
 
     try {
       const { data, error } = await supabase

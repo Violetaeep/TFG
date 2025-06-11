@@ -53,7 +53,7 @@ const Login = () => {
         <View style={styles.container}>
           <Atras router={router} />
           <View>
-            <Text style={styles.welcomeText}>Bienvenido/a!</Text>
+            <Text style={styles.bienvenida}>Bienvenido/a</Text>
           </View>
           <View style={styles.form}>
             <Text
@@ -121,10 +121,11 @@ const styles = StyleSheet.create({
     gap: 45,
     paddingHorizontal: ancho(7),
   },
-  welcomeText: {
+  bienvenida: {
     fontSize: alto(5),
-    fontWeight: tema.fonts.bold,
+    fontWeight: "300",
     color: tema.colors.text,
+    fontFamily: fuentes.Poppins
   },
   form: {
     gap: 25,

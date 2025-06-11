@@ -25,7 +25,7 @@ import { useRouter } from "expo-router";
 import Badge from "../../components/Badge";
 import Boton from "../../components/Boton";
 import * as ImagePicker from "expo-image-picker";
-import { Video } from "expo-av";
+import { VideoView, useVideoPlayer } from "expo-video";
 import { fuentes } from "../../constants/fuentes";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
@@ -171,6 +171,22 @@ const NuevaPublicacion = () => {
     }
   }, [textoBusqueda]);
 
+function VideoPlayer({ uri }) {
+  const player = useVideoPlayer(uri, (player) => {
+    player.loop = true;
+    player.play();
+  });
+
+  return (
+    <VideoView 
+      style={styles.videoPrevisualizacion}
+      player={player}
+      allowsFullscreen
+      allowsPictureInPicture
+    />
+  );
+}
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Pantalla>
@@ -234,26 +250,22 @@ const NuevaPublicacion = () => {
 
             {archivo && (
               <View style={styles.contenedorArchivo}>
-                {obtenerTipoArchivo(archivo) === "video" ? (
-                  <Video
-                    style={styles.videoPrevisualizacion}
-                    source={{ uri: obtenerUriArchivo(archivo) }}
-                    useNativeControls
-                    resizeMode="cover"
-                    isLooping
-                  />
+              {obtenerTipoArchivo(archivo) === "video" ? (
+                  <>
+                    <VideoPlayer uri={obtenerUriArchivo(archivo)} />
+                    <Badge
+                      icono="trash"
+                      color={"rgba(240, 27, 27, 0.68)"}
+                      onPress={() => setArchivo(null)}
+                      estilosExtra={styles.botonEliminarArchivo}
+                    />
+                  </>
                 ) : (
                   <Image
                     source={{ uri: obtenerUriArchivo(archivo) }}
                     style={styles.imagenPrevisualizacion}
                   />
                 )}
-                <Badge
-                  icono="trash"
-                  color={"rgba(240, 27, 27, 0.68)"}
-                  onPress={() => setArchivo(null)}
-                  estilosExtra={styles.botonEliminarArchivo}
-                />
               </View>
             )}
 

@@ -119,7 +119,7 @@ export const buscarPublicacionesUsuario = async (usuarioId, limite = 10) => {
         autor:usuarios!id_usuario(id, nombre, imagen)
         `
       )
-      .eq("id_usuario", usuarioId)
+      .eq("id_usuario", usuarioId)  
       .limit(limite)
       .order("created_at", { ascending: false });
 
@@ -164,13 +164,13 @@ export const buscarLikesPorIdPublicacion = async (idPublicacion) => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.log("Error al obtener likes de la publicacion: ", error);
+      console.log("Error al obtener likes de la publicacion (respuesta supabase): ", error);
       return { success: false, error: error };
     }
     return { success: true, data: data };
-  } catch (error) {
-    console.log("Error al obtener likes de la publicacion: ", error);
-    return { success: false, error: error };
+  } catch (err) {
+    console.log("Error al obtener likes de la publicacion (respuesta local): ", err);
+    return { success: false, error: err };
   }
 };
 

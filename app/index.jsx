@@ -12,7 +12,6 @@ const Index = () => {
   useEffect(() => {
     const cargar = async () => {
       await cargarFuentes();
-      console.log("fuentes cargadas");
     };
 
     cargar();
@@ -25,7 +24,6 @@ const Index = () => {
       <View style={styles.container}>
         <View style={{ gap: 20 }}>
           <Text style={styles.titulo}>Bienvenido/a</Text>
-          <Text style={styles.punchLine}>Imperia</Text>
         </View>
         <Image
           source={require("../assets/images/eep.png")}
@@ -81,11 +79,11 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   titulo: {
-    color: tema.colors.text,
+    color: "black",
     fontSize: alto(5),
     textAlign: "center",
-    fontFamily: fuentes.PoppinsBold,
-    fontWeight: tema.fonts.extrabold,
+    fontFamily: fuentes.Poppins,
+    fontWeight: "400",
   },
   punchLine: {
     textAlign: "center",

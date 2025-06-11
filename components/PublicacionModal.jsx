@@ -22,6 +22,9 @@ import {
   obtenerEtiquetadosPorIdPublicacion,
 } from "../services/publicaciones";
 import { useRouter } from "expo-router";
+import { VideoView, useVideoPlayer } from "expo-video";
+import { useEvent } from 'expo';
+import { ancho } from "../helpers/dimensiones";
 
 const PublicacionModal = ({
   visible,
@@ -37,6 +40,12 @@ const PublicacionModal = ({
   const [nuevoCuerpo, setNuevoCuerpo] = useState("");
   const [cargando, setCargando] = useState(false);
   const [etiquetados, setEtiquetados] = useState([]);
+
+    const esVideo = publicacion?.archivo?.endsWith('.mp4') || publicacion?.archivo?.endsWith('.mov');
+    const player = useVideoPlayer(esVideo ? obtenerImagen(publicacion?.archivo) : '', (player) => {
+      player.loop = true;
+    });
+    const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
 
   const router = useRouter();
 
@@ -157,11 +166,21 @@ const PublicacionModal = ({
               </View>
 
               <View style={styles.modalImagenContainer}>
-                <Image
-                  source={obtenerImagen(publicacion.archivo)}
-                  style={styles.modalImagen}
-                  contentFit="contain"
-                />
+                {esVideo ? (
+                          <VideoView 
+                            style={styles.media}
+                            player={player}
+                            allowsFullscreen
+                            allowsPictureInPicture
+                          />
+                        ) : (
+                          <Image
+                            source={obtenerImagen(publicacion?.archivo)}
+                            transition={100}
+                            borderRadius={tema.radius.sm}
+                            style={styles.media}
+                          />
+                        )}
               </View>
 
               <View style={styles.modalCuerpoContainer}>
@@ -428,6 +447,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 4,
   },
+    media: {
+      width: ancho(80),
+      height: ancho(80),
+      alignSelf: "center",
+      backgroundColor: '#000',
+    },
   comentarioText: {
     fontFamily: fuentes.Poppins,
     fontSize: 16,

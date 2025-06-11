@@ -65,18 +65,23 @@ const Perfil = () => {
   };
 
   const renderizarPublicacion = ({ item }) => (
+  
     <Pressable
       onPress={() => abrirModalPublicacion(item)}
       style={styles.itemPublicacion}
     >
-      <Image
-        source={
-          obtenerImagen(item.archivo) ||
-          require("../../assets/images/perfil.png")
-        }
-        style={styles.imagenPublicacion}
-        contentFit="cover"
-      />
+      {item?.archivo?.endsWith('.mp4') || item?.archivo?.endsWith('.mov') ? 
+      <View style={{margin: 10, width: 100, height: 100}}><Ionicons name="play" size={50} color={"white"}/></View>
+      
+      : 
+        <Image
+          source={
+            obtenerImagen(item.archivo)
+          }
+          style={styles.imagenPublicacion}
+          contentFit="cover"
+        />}
+
       <View style={styles.publicacionOverlay}>
         <View>
           <Text style={styles.textoOverlay}>{item.cuerpo}</Text>
@@ -279,7 +284,7 @@ const styles = StyleSheet.create({
     width: (windowWidth - 60) / 2,
     height: (windowWidth - 60) / 2,
     marginBottom: 12,
-    backgroundColor: "#fafafa",
+    backgroundColor: tema.colors.video,
     position: "relative",
     borderRadius: 12,
     overflow: "hidden",

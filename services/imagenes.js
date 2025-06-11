@@ -1,7 +1,8 @@
 import * as FileSystem from "expo-file-system";
 import { supabase } from "../lib/supabase";
 import { decode } from "base64-arraybuffer";
-import { URL } from "../constants";
+
+const URL = "https://mxmfldvwridcyfgcvqfd.supabase.co";
 
 export const obtenerImagen = (ruta) => {
   if (ruta) {
@@ -15,7 +16,6 @@ export const supabase_url = (ruta) => {
   if (ruta) {
     return { uri: `${URL}/storage/v1/object/public/subidas/${ruta}` };
   }
-
   return null;
 };
 
