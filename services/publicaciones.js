@@ -17,7 +17,7 @@ export const crearOActualizarPublicacion = async (publicacion) => {
 
     const { data: publicacionData, error: publicacionError } = await supabase
       .from("publicaciones")
-      .update({
+      .upsert({
         cuerpo: publicacion.cuerpo,
         archivo: publicacion.archivo,
         id_usuario: publicacion.id_usuario,

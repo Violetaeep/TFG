@@ -40,7 +40,7 @@ const Inicio = () => {
         <View style={styles.header}>
           <Image
             source={require("../../assets/images/eep.png")}
-            style={{ width: 80, height: 80 }}
+            style={{ width: 100, height: 80 }}
           />
         </View>
         <View style={styles.iconos}>

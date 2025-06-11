@@ -261,10 +261,18 @@ function VideoPlayer({ uri }) {
                     />
                   </>
                 ) : (
+                  <>
+                     <Badge
+                      icono="trash"
+                      color={"rgba(240, 27, 27, 0.68)"}
+                      onPress={() => setArchivo(null)}
+                      estilosExtra={styles.botonEliminarArchivo}
+                    />
                   <Image
                     source={{ uri: obtenerUriArchivo(archivo) }}
                     style={styles.imagenPrevisualizacion}
                   />
+                  </>
                 )}
               </View>
             )}
@@ -275,7 +283,7 @@ function VideoPlayer({ uri }) {
                 onPress={seleccionarArchivo}
               >
                 <Ionicons
-                  name="image-outline"
+                  name="image"
                   size={28}
                   color={tema.colors.principal}
                 />
@@ -449,6 +457,7 @@ const styles = StyleSheet.create({
     top: 16,
     right: 16,
     backgroundColor: "rgba(255, 255, 255, 0.6)",
+    zIndex: 1000,
   },
   contenedorBotones: {
     flexDirection: "row",

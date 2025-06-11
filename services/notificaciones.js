@@ -18,3 +18,4 @@ export const crearNotificacion = async (notificacion) => {
     return { success: false, error };
   }
 };
+

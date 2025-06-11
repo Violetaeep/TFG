@@ -23,7 +23,7 @@ const Index = () => {
       <StatusBar style="dark" />
       <View style={styles.container}>
         <View style={{ gap: 20 }}>
-          <Text style={styles.titulo}>Bienvenido/a</Text>
+          <Text style={styles.titulo}>Bienvenido</Text>
         </View>
         <Image
           source={require("../assets/images/eep.png")}
